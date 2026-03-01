@@ -1,0 +1,12 @@
+Welcome to DevTeam!
+
+We are glad to have you on board.
+
+To get started, explore the project.
+Check every branch — we left notes everywhere.
+
+Your first flag is right here:
+GTF{y0u_cl0n3d_1t}
+
+Good luck.
+— The Team
