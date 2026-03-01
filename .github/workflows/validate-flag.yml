@@ -1,0 +1,71 @@
+name: Flag Validator
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - name: Validate flag
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const crypto = require('crypto')
+            const title = context.payload.issue.title.trim()
+            const hash = crypto.createHash('sha256').update(title).digest('hex')
+            const flags = {
+              '78309779b378c33eff5f452a1f8608cad0ca67938fa5b7e3e203021cecd21bae': {
+                num: 1,
+                msg: '🎉 Flag 1 found! You cloned the repo and read the files.',
+                why: '> **What you learned:** `git clone` downloads a complete copy of a repository to your machine — every file, every branch, the entire history. It is always the first step when joining a new project.'
+              },
+              '99061caa1698006a5b03519766c7c59e413861e8fbe9ef6329624501b232f247': {
+                num: 2,
+                msg: '🎉 Flag 2 found! You explored the branches.',
+                why: '> **What you learned:** Branches let a team work on different things at the same time without interfering with each other. `git branch -a` shows all of them. `git checkout <name>` switches between them.'
+              },
+              '22088b9f130314097d4c88bd43db5b01bb83a11f31889a1e5a2f80e1902f3192': {
+                num: 3,
+                msg: '🎉 Flag 3 found! You read the commit history.',
+                why: '> **What you learned:** Every commit is a snapshot saved in time. `git log --oneline` shows the full history of a branch — who changed what, and when. Nothing in git history is easy to hide.'
+              },
+              '37164e0626ca072f509e7f7efb5562dd2c757b8e3c517c347f9f382d78ebed04': {
+                num: 4,
+                msg: '🎉 Flag 4 found! You compared branches.',
+                why: '> **What you learned:** `git diff` shows exactly what changed between two points. It is one of the most useful commands for understanding a codebase — what exists on one branch that does not exist on another.'
+              },
+            }
+            const entry = flags[hash]
+            if (entry) {
+              const player = context.payload.issue.user.login
+              await github.rest.issues.update({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: `✅ Flag ${entry.num} — found by @${player}`,
+                state: 'closed'
+              })
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: `✅ Correct!\n\n${entry.msg}\n\n${entry.why}\n\n---\nKeep going — find all 4 flags then complete the final task.`
+              })
+              await github.rest.issues.addLabels({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                labels: ['solved']
+              })
+            } else {
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: `❌ Not quite. Keep exploring!\n\nRemember: flags look like \`GTF{...}\`\n\nHint: read every file, check every branch, read the commit history.`
+              })
+            }

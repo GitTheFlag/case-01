@@ -1,0 +1,51 @@
+name: Final Task Validator
+
+on:
+  pull_request_target:
+    branches: [main]
+
+jobs:
+  check-team-file:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Check TEAM.md was updated
+        id: check
+        run: |
+          COUNT=$(wc -l < TEAM.md)
+          if [ "$COUNT" -gt 8 ]; then
+            echo "valid=true" >> $GITHUB_OUTPUT
+            echo "✅ TEAM.md updated. Welcome to the team!"
+          else
+            echo "valid=false" >> $GITHUB_OUTPUT
+            echo "❌ TEAM.md doesn't look updated. Add your name to the file!"
+          fi
+
+      - name: Close PR with success message
+        if: steps.check.outputs.valid == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const player = context.payload.pull_request.user.login
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `✅ **Welcome to the team, @${player}!**\n\nYou updated TEAM.md, committed, pushed, and opened a Pull Request — the complete GitHub workflow.\n\n> **What you learned:** A Pull Request is how you propose changes to a shared project. You commit to a branch, push it to GitHub, and open a PR. A reviewer (or a bot) checks your work. When it passes, the changes are merged.\n\n---\nCase 01 complete. Try [Case 02](https://github.com/GitTheFlag/case-02) next. 🚩`
+            })
+            await github.rest.pulls.update({
+              pull_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'closed'
+            })
+
+      - name: Fail if TEAM.md not updated
+        if: steps.check.outputs.valid != 'true'
+        run: exit 1
