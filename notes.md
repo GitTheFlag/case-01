@@ -16,3 +16,8 @@ GTF{br4nch3s_4r3_p4r4ll3l_w0rlds}
 - Use meaningful variable names
 - Comment complex logic
 - Keep functions small
+
+## Tools we use
+- git for version control
+- GitHub for collaboration
+- VS Code as editor
