@@ -1,5 +1,5 @@
 // DevTeam main project
-// Status: work in progress
+// Status: stable
 
 function greet(name) {
   if (!name) return "Hello, stranger!";
@@ -7,6 +7,7 @@ function greet(name) {
 }
 
 function farewell(name) {
+  if (!name) return "Goodbye, stranger!";
   return "Goodbye, " + name + "!";
 }
 
